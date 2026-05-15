@@ -1,0 +1,150 @@
+catalog:
+  name: Northstar Semantic Metrics Catalog
+  owner: Kinetic Gain Analytics Platform
+  publication_url: http://127.0.0.1:4994
+  description: >
+    Governed metric catalog for revenue, product, finance, support, and lifecycle
+    analytics definitions with contract state, ownership, freshness posture, and
+    semantic publishing metadata.
+  tags:
+    - semantic metrics
+    - metric governance
+    - analytics engineering
+    - ai-readable catalog
+    - metric contracts
+
+metrics:
+  - name: pipeline_coverage_ratio
+    label: Pipeline Coverage Ratio
+    description: >
+      Ratio of qualified pipeline against the current quarter committed revenue target.
+    owner: Revenue Systems
+    domain: revenue
+    tier: certified
+    contract_version: "2.3"
+    contract_status: healthy
+    freshness_status: within_sla
+    grain: quarter x segment
+    primary_entity: opportunity
+    formula_sql: sum(qualified_pipeline_amount) / nullif(sum(committed_revenue_target), 0)
+    dimensions:
+      - quarter
+      - segment
+      - region
+    consumers:
+      - Board forecast review
+      - CRO operating cadence
+    dependencies:
+      - fact_pipeline_snapshot
+      - dim_region
+      - targets_quarterly
+    policy_flags:
+      - board_exposed
+      - finance_reconciled
+    top_risk: Target imports rely on a manual file handoff every quarter close.
+  - name: net_revenue_retention
+    label: Net Revenue Retention
+    description: >
+      Expansion, contraction, and churn normalized against beginning-of-period recurring revenue.
+    owner: Finance Analytics
+    domain: finance
+    tier: certified
+    contract_version: "1.8"
+    contract_status: watch
+    freshness_status: within_sla
+    grain: month x account
+    primary_entity: subscription_account
+    formula_sql: (starting_arr + expansion_arr - contraction_arr - churn_arr) / nullif(starting_arr, 0)
+    dimensions:
+      - month
+      - segment
+      - account_tier
+    consumers:
+      - Investor prep
+      - CFO weekly review
+    dependencies:
+      - fact_arr_movement
+      - dim_account
+    policy_flags:
+      - finance_reconciled
+      - investor_visible
+    top_risk: Finance and RevOps still disagree on one-time reactivation treatment.
+  - name: weekly_active_workspace_rate
+    label: Weekly Active Workspace Rate
+    description: >
+      Percent of provisioned workspaces with at least one qualifying collaborative action in the last seven days.
+    owner: Product Intelligence
+    domain: product
+    tier: managed
+    contract_version: "3.0"
+    contract_status: healthy
+    freshness_status: within_sla
+    grain: week x workspace
+    primary_entity: workspace
+    formula_sql: count(distinct active_workspace_id) / nullif(count(distinct provisioned_workspace_id), 0)
+    dimensions:
+      - week
+      - workspace_plan
+      - acquisition_channel
+    consumers:
+      - Product review
+      - Lifecycle programs
+    dependencies:
+      - fact_workspace_activity
+      - dim_workspace
+    policy_flags:
+      - experimentation_sensitive
+    top_risk: Activity qualification logic needs close watch during feature launches.
+  - name: first_response_sla_attainment
+    label: First Response SLA Attainment
+    description: >
+      Share of support conversations that received a first human response within target SLA by queue.
+    owner: Support Operations
+    domain: support
+    tier: managed
+    contract_version: "1.4"
+    contract_status: breached
+    freshness_status: stale
+    grain: day x support_queue
+    primary_entity: conversation
+    formula_sql: count(case when first_response_minutes <= sla_target_minutes then conversation_id end) / nullif(count(conversation_id), 0)
+    dimensions:
+      - day
+      - support_queue
+      - language
+    consumers:
+      - Support leadership
+      - Workforce management
+    dependencies:
+      - fact_support_conversations
+      - dim_queue
+    policy_flags:
+      - staffing_sensitive
+      - stale_source_feed
+    top_risk: Queue feed is lagging by six hours, which invalidates same-day service readouts.
+  - name: onboarding_time_to_value_days
+    label: Onboarding Time To Value
+    description: >
+      Median days from signed contract to first value milestone completion for enterprise accounts.
+    owner: Customer Success Analytics
+    domain: lifecycle
+    tier: managed
+    contract_version: "0.9"
+    contract_status: watch
+    freshness_status: within_sla
+    grain: cohort month x account
+    primary_entity: customer_account
+    formula_sql: percentile_cont(0.5) within group (order by days_to_first_value)
+    dimensions:
+      - cohort_month
+      - segment
+      - implementation_partner
+    consumers:
+      - Customer success reviews
+      - Onboarding optimization
+    dependencies:
+      - fact_onboarding_milestones
+      - dim_account
+    policy_flags:
+      - definition_in_review
+    top_risk: First-value milestone taxonomy still varies across implementation partners.

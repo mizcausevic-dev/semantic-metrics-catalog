@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catalog lane for formulas, owners, and metric contracts.</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #06101b;
+        --panel: #091728;
+        --panel-2: #0e1e33;
+        --line: rgba(255,255,255,0.08);
+        --text: #edf4ff;
+        --muted: #92a7c7;
+        --blue: #76c8ff;
+        --indigo: #6b79ff;
+        --green: #48d59b;
+        --amber: #f5c16b;
+        --red: #ff7f92;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", system-ui, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(118,200,255,0.14), transparent 24%),
+          linear-gradient(180deg, #03070c 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+      a { color: inherit; text-decoration: none; }
+      .wrap { max-width: 1360px; margin: 0 auto; padding: 28px; }
+      .topbar {
+        display: flex; justify-content: space-between; align-items: center; gap: 18px;
+        padding: 20px 0 16px; border-bottom: 1px solid var(--line);
+      }
+      .brand strong { display: block; font-size: 14px; }
+      .brand span {
+        display: block; margin-top: 4px; color: var(--blue); font-size: 10px;
+        letter-spacing: .2em; text-transform: uppercase;
+      }
+      .status {
+        display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px;
+        border-radius: 999px; border: 1px solid rgba(118,200,255,0.15);
+        background: rgba(118,200,255,0.07); color: #d8ebff; font-size: 11px;
+        text-transform: uppercase; letter-spacing: .16em; font-weight: 800;
+      }
+      .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--blue); box-shadow: 0 0 12px rgba(118,200,255,0.85); }
+      .hero {
+        margin-top: 24px; padding: 28px; border: 1px solid var(--line); border-radius: 28px;
+        background: linear-gradient(180deg, rgba(9,23,40,0.97), rgba(6,16,28,0.96));
+        box-shadow: 0 24px 54px rgba(0,0,0,0.26);
+      }
+      .eyebrow {
+        color: var(--blue); font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
+        font-weight: 800; margin-bottom: 16px;
+      }
+      h1 {
+        margin: 0; font-size: clamp(40px, 5vw, 72px); line-height: .94;
+        font-family: Georgia, "Times New Roman", serif; letter-spacing: -.05em;
+      }
+      .hero p {
+        margin: 14px 0 0; max-width: 900px; color: var(--muted); font-size: 18px; line-height: 1.56;
+      }
+      .hero-strip {
+        display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-top: 24px;
+      }
+      .hero-kpi {
+        padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.03);
+      }
+      .hero-kpi .label, .section-kicker, .micro {
+        color: #7388a6; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; font-weight: 800;
+      }
+      .hero-kpi .value { margin-top: 8px; font-size: 30px; font-weight: 900; }
+      .callout {
+        margin-top: 18px; padding: 18px 20px; border-radius: 18px; background: rgba(0,0,0,0.18);
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+      .callout strong {
+        display: block; color: var(--amber); font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .nav-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+      .nav-link {
+        padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03); color: #b1c1d8; font-size: 11px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: .12em;
+      }
+      .nav-link.active { color: var(--amber); border-color: rgba(245,193,107,0.18); background: rgba(245,193,107,0.08); }
+      .section {
+        margin-top: 24px; border-radius: 26px; border: 1px solid var(--line);
+        background: var(--panel); overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,0.22);
+      }
+      .section-head { padding: 22px 24px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+      .section-head h2 { margin: 8px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 26px; letter-spacing: -.03em; }
+      .section-head p { margin: 10px 0 0; color: var(--muted); font-size: 15px; line-height: 1.55; max-width: 920px; }
+      .section-body { padding: 24px; }
+      .grid-4, .grid-3, .grid-2 { display: grid; gap: 18px; }
+      .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .card {
+        border-radius: 20px; padding: 18px; border: 1px solid rgba(255,255,255,0.06);
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.08));
+      }
+      .card .value { margin-top: 10px; font-size: 34px; font-weight: 900; }
+      .card p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
+      th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
+      td { font-size: 14px; color: var(--text); }
+      .tag {
+        display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px;
+        border-radius: 999px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .14em;
+      }
+      .healthy { color: var(--green); background: rgba(72,213,155,0.12); border: 1px solid rgba(72,213,155,0.12); }
+      .watch { color: var(--amber); background: rgba(245,193,107,0.12); border: 1px solid rgba(245,193,107,0.12); }
+      .breached { color: var(--red); background: rgba(255,127,146,0.12); border: 1px solid rgba(255,127,146,0.12); }
+      .pill-stack { display: flex; flex-wrap: wrap; gap: 8px; }
+      .pill {
+        display: inline-flex; padding: 7px 10px; border-radius: 999px; background: rgba(118,200,255,0.09);
+        color: var(--blue); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em;
+      }
+      .code {
+        border-radius: 22px; border: 1px solid rgba(255,255,255,0.08); background: rgba(2,7,14,0.88); overflow: hidden;
+      }
+      .code-head { padding: 16px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; }
+      .lights { display: flex; gap: 8px; }
+      .lights i { width: 11px; height: 11px; border-radius: 999px; display: block; }
+      .lights i:nth-child(1) { background: rgba(255,127,146,0.55); }
+      .lights i:nth-child(2) { background: rgba(245,193,107,0.55); }
+      .lights i:nth-child(3) { background: rgba(72,213,155,0.55); }
+      pre { margin: 0; padding: 18px; color: #d9e8fb; font-size: 13px; line-height: 1.56; white-space: pre-wrap; overflow: auto; font-family: "Cascadia Code", Consolas, monospace; }
+      .footer { display: flex; flex-wrap: wrap; gap: 18px; margin: 18px 0 8px; color: #7388a6; font-size: 10px; text-transform: uppercase; letter-spacing: .16em; }
+      .footer strong { color: #c1d0e3; }
+      @media (max-width: 1080px) {
+        .hero-strip, .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+        .topbar { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <strong>Semantic Metrics Catalog</strong>
+          <span>catalog lane</span>
+        </div>
+        <div class="status"><span class="dot"></span>Metric contract registry live</div>
+      </div>
+      <section class="hero">
+        <div class="eyebrow">catalog lane</div>
+        <h1>Catalog lane for formulas, owners, and metric contracts.</h1>
+        <p>Governed metric definitions, owner lanes, freshness expectations, and AI-readable semantic contracts in one catalog surface.</p>
+        <div class="hero-strip">
+          <div class="hero-kpi"><div class="label">Metrics</div><div class="value">5</div></div>
+          <div class="hero-kpi"><div class="label">Owners</div><div class="value">5</div></div>
+          <div class="hero-kpi"><div class="label">Flagged contracts</div><div class="value">3</div></div>
+          <div class="hero-kpi"><div class="label">Freshness breaches</div><div class="value">1</div></div>
+          <div class="hero-kpi"><div class="label">Policy flags</div><div class="value">8</div></div>
+        </div>
+        <div class="callout"><strong>Lead recommendation</strong>Treat metric definitions like contracts: surface ownership gaps, freshness drift, and policy exceptions before dashboards turn into executive folklore.</div>
+        <div class="nav-row"><a class="nav-link " href="/">Overview</a><a class="nav-link active" href="/catalog">Catalog</a><a class="nav-link " href="/contracts">Contracts</a><a class="nav-link " href="/owners">Owners</a><a class="nav-link " href="/docs">Docs</a></div>
+      </section>
+      
+      <section class="section">
+        <div class="section-head">
+          <div class="section-kicker">Metric catalog</div>
+          <h2>Each metric is published with the contract humans and machines actually need.</h2>
+          <p>The point is not just to name the metric. It is to expose owner, grain, dependencies, formula, consumer pressure, and policy flags clearly enough that downstream teams can reuse it safely.</p>
+        </div>
+        <div class="section-body">
+          <div class="grid-2">
+        <div class="card">
+          <div class="micro">support · managed</div>
+          <h3 style="margin:10px 0 0;font-size:22px;">First Response SLA Attainment</h3>
+          <p>Share of support conversations that received a first human response within target SLA by queue.
+</p>
+          <div class="pill-stack" style="margin-top:14px;">
+            <span class="pill">Support Operations</span>
+            <span class="pill">v1.4</span>
+            <span class="pill">day x support_queue</span>
+          </div>
+          <div class="code" style="margin-top:16px;">
+            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
+            <pre>count(case when first_response_minutes &lt;= sla_target_minutes then conversation_id end) / nullif(count(conversation_id), 0)</pre>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="micro">finance · certified</div>
+          <h3 style="margin:10px 0 0;font-size:22px;">Net Revenue Retention</h3>
+          <p>Expansion, contraction, and churn normalized against beginning-of-period recurring revenue.
+</p>
+          <div class="pill-stack" style="margin-top:14px;">
+            <span class="pill">Finance Analytics</span>
+            <span class="pill">v1.8</span>
+            <span class="pill">month x account</span>
+          </div>
+          <div class="code" style="margin-top:16px;">
+            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
+            <pre>(starting_arr + expansion_arr - contraction_arr - churn_arr) / nullif(starting_arr, 0)</pre>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="micro">lifecycle · managed</div>
+          <h3 style="margin:10px 0 0;font-size:22px;">Onboarding Time To Value</h3>
+          <p>Median days from signed contract to first value milestone completion for enterprise accounts.
+</p>
+          <div class="pill-stack" style="margin-top:14px;">
+            <span class="pill">Customer Success Analytics</span>
+            <span class="pill">v0.9</span>
+            <span class="pill">cohort month x account</span>
+          </div>
+          <div class="code" style="margin-top:16px;">
+            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
+            <pre>percentile_cont(0.5) within group (order by days_to_first_value)</pre>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="micro">revenue · certified</div>
+          <h3 style="margin:10px 0 0;font-size:22px;">Pipeline Coverage Ratio</h3>
+          <p>Ratio of qualified pipeline against the current quarter committed revenue target.
+</p>
+          <div class="pill-stack" style="margin-top:14px;">
+            <span class="pill">Revenue Systems</span>
+            <span class="pill">v2.3</span>
+            <span class="pill">quarter x segment</span>
+          </div>
+          <div class="code" style="margin-top:16px;">
+            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
+            <pre>sum(qualified_pipeline_amount) / nullif(sum(committed_revenue_target), 0)</pre>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="micro">product · managed</div>
+          <h3 style="margin:10px 0 0;font-size:22px;">Weekly Active Workspace Rate</h3>
+          <p>Percent of provisioned workspaces with at least one qualifying collaborative action in the last seven days.
+</p>
+          <div class="pill-stack" style="margin-top:14px;">
+            <span class="pill">Product Intelligence</span>
+            <span class="pill">v3.0</span>
+            <span class="pill">week x workspace</span>
+          </div>
+          <div class="code" style="margin-top:16px;">
+            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
+            <pre>count(distinct active_workspace_id) / nullif(count(distinct provisioned_workspace_id), 0)</pre>
+          </div>
+        </div>
+        </div>
+        </div>
+      </section>
+    
+      <div class="footer">
+        <span><strong>Discipline:</strong> metric governance</span>
+        <span><strong>Focus:</strong> contracts / freshness / ownership / semantic reuse</span>
+        <span><strong>Surface:</strong> operator-friendly / AI-legible / analytics-safe</span>
+      </div>
+    </div>
+  </body>
+</html>
