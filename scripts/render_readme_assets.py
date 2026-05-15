@@ -44,7 +44,7 @@ def main() -> None:
                 "--headless",
                 "--disable-gpu",
                 "--hide-scrollbars",
-                f"--window-size=1440,920",
+                f"--window-size=1600,1020",
                 f"--screenshot={png}",
                 page.as_uri(),
             ],

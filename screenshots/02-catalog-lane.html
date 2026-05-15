@@ -3,263 +3,760 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Catalog lane for formulas, owners, and metric contracts.</title>
+    <title>Metric contracts, owner lanes, and freshness signals laid out as a readable registry.</title>
     <style>
       :root {
-        color-scheme: dark;
-        --bg: #06101b;
-        --panel: #091728;
-        --panel-2: #0e1e33;
-        --line: rgba(255,255,255,0.08);
-        --text: #edf4ff;
-        --muted: #92a7c7;
-        --blue: #76c8ff;
-        --indigo: #6b79ff;
-        --green: #48d59b;
-        --amber: #f5c16b;
-        --red: #ff7f92;
+        --bg: #f6f8fb;
+        --panel: #ffffff;
+        --panel-alt: #f8fafc;
+        --line: #dbe3ee;
+        --line-strong: #cdd8e5;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --soft: #94a3b8;
+        --brand: #2563eb;
+        --brand-dark: #1d4ed8;
+        --brand-soft: #eaf2ff;
+        --green: #15803d;
+        --green-soft: #dcfce7;
+        --amber: #b45309;
+        --amber-soft: #fef3c7;
+        --red: #b91c1c;
+        --red-soft: #fee2e2;
+        --shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
       }
       * { box-sizing: border-box; }
       body {
         margin: 0;
         font-family: Inter, "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
         background:
-          radial-gradient(circle at top left, rgba(118,200,255,0.14), transparent 24%),
-          linear-gradient(180deg, #03070c 0%, var(--bg) 100%);
-        color: var(--text);
+          radial-gradient(circle at top left, rgba(37,99,235,0.08), transparent 22%),
+          radial-gradient(circle at bottom right, rgba(148,163,184,0.12), transparent 18%),
+          linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(rgba(148,163,184,0.16) 1px, transparent 1px);
+        background-size: 28px 28px;
+        mask-image: linear-gradient(180deg, rgba(0,0,0,0.18), transparent 68%);
+        pointer-events: none;
       }
       a { color: inherit; text-decoration: none; }
-      .wrap { max-width: 1360px; margin: 0 auto; padding: 28px; }
+      .app {
+        max-width: 1600px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+      }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        height: 100vh;
+        border-right: 1px solid var(--line);
+        background: rgba(255,255,255,0.82);
+        backdrop-filter: blur(18px);
+        padding: 24px 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .sidebar-top { padding: 0 22px; }
+      .mark {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        background: var(--ink);
+        color: white;
+        font-weight: 900;
+        letter-spacing: -.03em;
+      }
+      .brand-block {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 28px;
+      }
+      .brand-block strong {
+        display: block;
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -.03em;
+      }
+      .brand-block span {
+        display: block;
+        margin-top: 4px;
+        color: var(--soft);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+      }
+      .sidebar-kicker {
+        padding: 0 22px;
+        margin-bottom: 12px;
+        color: var(--soft);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+      }
+      .sidebar-link {
+        display: block;
+        padding: 14px 22px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted);
+        border-right: 2px solid transparent;
+        transition: 160ms ease;
+      }
+      .sidebar-link.active {
+        color: var(--brand);
+        border-right-color: var(--brand);
+        background: var(--brand-soft);
+      }
+      .sidebar-link:hover {
+        color: var(--ink);
+        background: #f8fafc;
+      }
+      .sidebar-card {
+        margin: 0 22px;
+        border: 1px solid var(--line);
+        background: var(--panel-alt);
+        padding: 16px;
+      }
+      .sidebar-card .tiny {
+        color: var(--soft);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      .sidebar-card .link {
+        margin-top: 10px;
+        display: inline-flex;
+        gap: 6px;
+        color: var(--ink);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+      .main {
+        min-width: 0;
+        padding: 0 34px 34px;
+      }
       .topbar {
-        display: flex; justify-content: space-between; align-items: center; gap: 18px;
-        padding: 20px 0 16px; border-bottom: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 22px 0 18px;
+        background: linear-gradient(180deg, rgba(246,248,251,0.94), rgba(246,248,251,0.82));
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--line);
       }
-      .brand strong { display: block; font-size: 14px; }
-      .brand span {
-        display: block; margin-top: 4px; color: var(--blue); font-size: 10px;
-        letter-spacing: .2em; text-transform: uppercase;
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
       }
-      .status {
-        display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px;
-        border-radius: 999px; border: 1px solid rgba(118,200,255,0.15);
-        background: rgba(118,200,255,0.07); color: #d8ebff; font-size: 11px;
-        text-transform: uppercase; letter-spacing: .16em; font-weight: 800;
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 0 5px rgba(34,197,94,0.12);
       }
-      .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--blue); box-shadow: 0 0 12px rgba(118,200,255,0.85); }
+      .topbar-meta {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+      }
+      .meta-box {
+        background: white;
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        min-width: 156px;
+      }
+      .meta-box span {
+        display: block;
+        color: var(--soft);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+      }
+      .meta-box strong {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink);
+      }
       .hero {
-        margin-top: 24px; padding: 28px; border: 1px solid var(--line); border-radius: 28px;
-        background: linear-gradient(180deg, rgba(9,23,40,0.97), rgba(6,16,28,0.96));
-        box-shadow: 0 24px 54px rgba(0,0,0,0.26);
+        margin-top: 30px;
+        border: 1px solid var(--line);
+        background: white;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) 340px;
+      }
+      .hero-copy {
+        padding: 34px 34px 28px;
       }
       .eyebrow {
-        color: var(--blue); font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
-        font-weight: 800; margin-bottom: 16px;
+        color: var(--brand);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: .26em;
+        text-transform: uppercase;
       }
       h1 {
-        margin: 0; font-size: clamp(40px, 5vw, 72px); line-height: .94;
-        font-family: Georgia, "Times New Roman", serif; letter-spacing: -.05em;
+        margin: 16px 0 0;
+        font-size: clamp(44px, 5vw, 74px);
+        line-height: .92;
+        font-family: Georgia, "Times New Roman", serif;
+        letter-spacing: -.055em;
       }
-      .hero p {
-        margin: 14px 0 0; max-width: 900px; color: var(--muted); font-size: 18px; line-height: 1.56;
+      .hero-copy p {
+        margin: 16px 0 0;
+        max-width: 780px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.6;
+        font-weight: 500;
       }
-      .hero-strip {
-        display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-top: 24px;
+      .hero-aside {
+        border-left: 1px solid var(--line);
+        background: linear-gradient(180deg, #f8fbff 0%, #f8fafc 100%);
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .hero-aside h3 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        color: var(--soft);
+      }
+      .hero-aside .callout {
+        border: 1px solid var(--line);
+        background: white;
+        padding: 18px;
+      }
+      .hero-aside .callout strong {
+        display: block;
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .hero-aside .callout p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .hero-kpis {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0;
+        border-top: 1px solid var(--line);
       }
       .hero-kpi {
-        padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06);
-        background: rgba(255,255,255,0.03);
+        padding: 18px 22px 20px;
+        border-right: 1px solid var(--line);
       }
-      .hero-kpi .label, .section-kicker, .micro {
-        color: #7388a6; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; font-weight: 800;
+      .hero-kpi:last-child { border-right: 0; }
+      .label, .section-kicker, .micro {
+        color: var(--soft);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .16em;
+        text-transform: uppercase;
       }
-      .hero-kpi .value { margin-top: 8px; font-size: 30px; font-weight: 900; }
-      .callout {
-        margin-top: 18px; padding: 18px 20px; border-radius: 18px; background: rgba(0,0,0,0.18);
-        border: 1px solid rgba(255,255,255,0.06);
+      .hero-kpi .value {
+        margin-top: 8px;
+        font-size: 34px;
+        font-weight: 900;
+        letter-spacing: -.04em;
       }
-      .callout strong {
-        display: block; color: var(--amber); font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
-        margin-bottom: 8px;
+      .nav-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
       }
-      .nav-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-      .nav-link {
-        padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.03); color: #b1c1d8; font-size: 11px; font-weight: 800;
-        text-transform: uppercase; letter-spacing: .12em;
+      .nav-pill {
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .12em;
       }
-      .nav-link.active { color: var(--amber); border-color: rgba(245,193,107,0.18); background: rgba(245,193,107,0.08); }
+      .nav-pill.active {
+        color: var(--brand);
+        border-color: #bfdbfe;
+        background: var(--brand-soft);
+      }
       .section {
-        margin-top: 24px; border-radius: 26px; border: 1px solid var(--line);
-        background: var(--panel); overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,0.22);
+        margin-top: 28px;
+        border: 1px solid var(--line);
+        background: white;
+        box-shadow: var(--shadow);
       }
-      .section-head { padding: 22px 24px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-      .section-head h2 { margin: 8px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 26px; letter-spacing: -.03em; }
-      .section-head p { margin: 10px 0 0; color: var(--muted); font-size: 15px; line-height: 1.55; max-width: 920px; }
-      .section-body { padding: 24px; }
-      .grid-4, .grid-3, .grid-2 { display: grid; gap: 18px; }
+      .section-head {
+        padding: 26px 28px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .section-head h2 {
+        margin: 10px 0 0;
+        font-size: 28px;
+        font-family: Georgia, "Times New Roman", serif;
+        letter-spacing: -.04em;
+      }
+      .section-head p {
+        margin: 12px 0 0;
+        max-width: 920px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .section-body { padding: 28px; }
+      .grid-4, .grid-3, .grid-2 {
+        display: grid;
+        gap: 20px;
+      }
       .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .card {
-        border-radius: 20px; padding: 18px; border: 1px solid rgba(255,255,255,0.06);
-        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.08));
+      .stat-card, .card {
+        border: 1px solid var(--line);
+        background: white;
+        padding: 22px;
       }
-      .card .value { margin-top: 10px; font-size: 34px; font-weight: 900; }
-      .card p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
-      th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
-      td { font-size: 14px; color: var(--text); }
-      .tag {
-        display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px;
-        border-radius: 999px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .14em;
+      .stat-card .value, .card .value {
+        margin-top: 12px;
+        font-size: 36px;
+        font-weight: 900;
+        letter-spacing: -.04em;
       }
-      .healthy { color: var(--green); background: rgba(72,213,155,0.12); border: 1px solid rgba(72,213,155,0.12); }
-      .watch { color: var(--amber); background: rgba(245,193,107,0.12); border: 1px solid rgba(245,193,107,0.12); }
-      .breached { color: var(--red); background: rgba(255,127,146,0.12); border: 1px solid rgba(255,127,146,0.12); }
-      .pill-stack { display: flex; flex-wrap: wrap; gap: 8px; }
+      .stat-card p, .card p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .editorial {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 20px;
+      }
+      .table-shell {
+        border: 1px solid var(--line);
+        background: white;
+        overflow: hidden;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel-alt);
+      }
+      .searchbar {
+        min-width: 360px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .toolbar-actions {
+        display: flex;
+        gap: 10px;
+      }
+      .chip {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th, td {
+        text-align: left;
+        padding: 16px 14px;
+        border-bottom: 1px solid #ecf1f6;
+        vertical-align: top;
+      }
+      th {
+        background: #fbfdff;
+        color: var(--soft);
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+      }
+      td {
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--ink);
+      }
+      .metric-name {
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .metric-slug {
+        margin-top: 5px;
+        color: var(--soft);
+        font-size: 11px;
+        font-family: "Cascadia Code", Consolas, monospace;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 10px;
+        border: 1px solid transparent;
+        border-radius: 2px;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      .healthy, .within_sla {
+        color: var(--green);
+        background: var(--green-soft);
+        border-color: #bbf7d0;
+      }
+      .watch {
+        color: var(--amber);
+        background: var(--amber-soft);
+        border-color: #fde68a;
+      }
+      .breached, .overdue {
+        color: var(--red);
+        background: var(--red-soft);
+        border-color: #fecaca;
+      }
+      .panel {
+        border: 1px solid var(--line);
+        background: white;
+        padding: 24px;
+      }
+      .panel h3 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -.03em;
+      }
+      .panel-list {
+        margin-top: 18px;
+        display: grid;
+        gap: 14px;
+      }
+      .row-item {
+        padding: 14px 0;
+        border-top: 1px solid #edf2f7;
+      }
+      .row-item:first-child { border-top: 0; padding-top: 0; }
+      .row-item strong {
+        display: block;
+        font-size: 14px;
+      }
+      .row-item span {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .pill-stack {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
       .pill {
-        display: inline-flex; padding: 7px 10px; border-radius: 999px; background: rgba(118,200,255,0.09);
-        color: var(--blue); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em;
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 10px;
+        border: 1px solid #d8e4f4;
+        background: #f5f9ff;
+        color: var(--brand);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .12em;
       }
       .code {
-        border-radius: 22px; border: 1px solid rgba(255,255,255,0.08); background: rgba(2,7,14,0.88); overflow: hidden;
+        border: 1px solid #0f172a;
+        background: #0f172a;
+        color: #dbeafe;
+        overflow: hidden;
       }
-      .code-head { padding: 16px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; }
-      .lights { display: flex; gap: 8px; }
-      .lights i { width: 11px; height: 11px; border-radius: 999px; display: block; }
-      .lights i:nth-child(1) { background: rgba(255,127,146,0.55); }
-      .lights i:nth-child(2) { background: rgba(245,193,107,0.55); }
-      .lights i:nth-child(3) { background: rgba(72,213,155,0.55); }
-      pre { margin: 0; padding: 18px; color: #d9e8fb; font-size: 13px; line-height: 1.56; white-space: pre-wrap; overflow: auto; font-family: "Cascadia Code", Consolas, monospace; }
-      .footer { display: flex; flex-wrap: wrap; gap: 18px; margin: 18px 0 8px; color: #7388a6; font-size: 10px; text-transform: uppercase; letter-spacing: .16em; }
-      .footer strong { color: #c1d0e3; }
-      @media (max-width: 1080px) {
-        .hero-strip, .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
-        .topbar { flex-direction: column; align-items: flex-start; }
+      .code-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+      .lights {
+        display: flex;
+        gap: 8px;
+      }
+      .lights i {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: block;
+      }
+      .lights i:nth-child(1) { background: rgba(248,113,113,0.8); }
+      .lights i:nth-child(2) { background: rgba(251,191,36,0.8); }
+      .lights i:nth-child(3) { background: rgba(74,222,128,0.8); }
+      pre {
+        margin: 0;
+        padding: 18px;
+        white-space: pre-wrap;
+        overflow: auto;
+        font-family: "Cascadia Code", Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .mini-bar-track {
+        margin-top: 8px;
+        height: 8px;
+        background: #e5edf7;
+      }
+      .mini-bar-fill {
+        height: 100%;
+      }
+      .mini-bar-fill.blue { background: linear-gradient(90deg, var(--brand), #60a5fa); }
+      .mini-bar-fill.amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+      .mini-bar-fill.red { background: linear-gradient(90deg, #ef4444, #f87171); }
+      .bar-row {
+        margin-top: 18px;
+        display: grid;
+        gap: 14px;
+      }
+      .bar-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .footer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin: 18px 0 8px;
+        color: var(--soft);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+      }
+      .footer strong { color: var(--ink); }
+      @media (max-width: 1260px) {
+        .app { grid-template-columns: 1fr; }
+        .sidebar { display: none; }
+        .hero-grid, .hero-kpis, .grid-4, .grid-3, .grid-2, .editorial {
+          grid-template-columns: 1fr;
+        }
+        .topbar {
+          position: static;
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <div class="topbar">
-        <div class="brand">
-          <strong>Semantic Metrics Catalog</strong>
-          <span>catalog lane</span>
+    <div class="app">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-top">
+            <div class="brand-block">
+              <div class="mark">SM</div>
+              <div>
+                <strong>Semantic Metrics</strong>
+                <span>Registry // v2.4.1-stable</span>
+              </div>
+            </div>
+          </div>
+          <div class="sidebar-kicker">Workspace</div>
+          <a class="sidebar-link " href="/">System Overview</a><a class="sidebar-link active" href="/catalog">Registry Catalog</a><a class="sidebar-link " href="/contracts">Contract Board</a><a class="sidebar-link " href="/owners">Ownership Areas</a><a class="sidebar-link " href="/docs">API / Integration</a>
         </div>
-        <div class="status"><span class="dot"></span>Metric contract registry live</div>
-      </div>
-      <section class="hero">
-        <div class="eyebrow">catalog lane</div>
-        <h1>Catalog lane for formulas, owners, and metric contracts.</h1>
-        <p>Governed metric definitions, owner lanes, freshness expectations, and AI-readable semantic contracts in one catalog surface.</p>
-        <div class="hero-strip">
-          <div class="hero-kpi"><div class="label">Metrics</div><div class="value">5</div></div>
-          <div class="hero-kpi"><div class="label">Owners</div><div class="value">5</div></div>
-          <div class="hero-kpi"><div class="label">Flagged contracts</div><div class="value">3</div></div>
-          <div class="hero-kpi"><div class="label">Freshness breaches</div><div class="value">1</div></div>
-          <div class="hero-kpi"><div class="label">Policy flags</div><div class="value">8</div></div>
+        <div class="sidebar-card">
+          <div class="tiny">Source: mizcausevic-dev</div>
+          <a class="link" href="https://github.com/mizcausevic-dev/semantic-metrics-catalog">GitHub Repository</a>
         </div>
-        <div class="callout"><strong>Lead recommendation</strong>Treat metric definitions like contracts: surface ownership gaps, freshness drift, and policy exceptions before dashboards turn into executive folklore.</div>
-        <div class="nav-row"><a class="nav-link " href="/">Overview</a><a class="nav-link active" href="/catalog">Catalog</a><a class="nav-link " href="/contracts">Contracts</a><a class="nav-link " href="/owners">Owners</a><a class="nav-link " href="/docs">Docs</a></div>
-      </section>
-      
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <div class="status-pill"><span class="status-dot"></span>Posture: stable metric governance</div>
+          <div class="topbar-meta">
+            <div class="meta-box"><span>Flagged metrics</span><strong>3 under review</strong></div>
+            <div class="meta-box"><span>Freshness drift</span><strong>1 breach lane</strong></div>
+            <div class="meta-box"><span>Owner coverage</span><strong>5 stewardship lanes</strong></div>
+          </div>
+        </div>
+        <section class="hero">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <div class="eyebrow">catalog</div>
+              <h1>Metric contracts, owner lanes, and freshness signals laid out as a readable registry.</h1>
+              <p>Governed metric definitions, owner lanes, freshness expectations, and AI-readable semantic contracts in one catalog surface.</p>
+              <div class="nav-row">
+                <a class="nav-pill " href="/">System Overview</a><a class="nav-pill active" href="/catalog">Registry Catalog</a><a class="nav-pill " href="/contracts">Contract Board</a><a class="nav-pill " href="/owners">Ownership Areas</a><a class="nav-pill " href="/docs">API / Integration</a>
+              </div>
+            </div>
+            <div class="hero-aside">
+              <h3>Lead Recommendation</h3>
+              <div class="callout">
+                <strong>Treat metric definitions like contracts: surface ownership gaps, freshness drift, and policy exceptions before dashboards turn into executive folklore.</strong>
+                <p>Make metrics portable enough for operators, executives, and AI systems to reuse the same contract without reinterpreting it.</p>
+              </div>
+            </div>
+          </div>
+          <div class="hero-kpis">
+            <div class="hero-kpi"><div class="label">Metrics</div><div class="value">5</div></div>
+            <div class="hero-kpi"><div class="label">Owners</div><div class="value">5</div></div>
+            <div class="hero-kpi"><div class="label">Flagged</div><div class="value">3</div></div>
+            <div class="hero-kpi"><div class="label">Freshness breaches</div><div class="value">1</div></div>
+            <div class="hero-kpi"><div class="label">Policy flags</div><div class="value">8</div></div>
+          </div>
+        </section>
+        
       <section class="section">
         <div class="section-head">
-          <div class="section-kicker">Metric catalog</div>
-          <h2>Each metric is published with the contract humans and machines actually need.</h2>
-          <p>The point is not just to name the metric. It is to expose owner, grain, dependencies, formula, consumer pressure, and policy flags clearly enough that downstream teams can reuse it safely.</p>
+          <div class="section-kicker">Registry catalog</div>
+          <h2>Searchable metric inventory with the details downstream systems actually need.</h2>
+          <p>The catalog becomes more useful when the table is readable at a glance and the semantic contract is close enough to inspect without leaving the page.</p>
         </div>
         <div class="section-body">
-          <div class="grid-2">
-        <div class="card">
-          <div class="micro">support · managed</div>
-          <h3 style="margin:10px 0 0;font-size:22px;">First Response SLA Attainment</h3>
-          <p>Share of support conversations that received a first human response within target SLA by queue.
-</p>
-          <div class="pill-stack" style="margin-top:14px;">
-            <span class="pill">Support Operations</span>
-            <span class="pill">v1.4</span>
-            <span class="pill">day x support_queue</span>
-          </div>
-          <div class="code" style="margin-top:16px;">
-            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
-            <pre>count(case when first_response_minutes &lt;= sla_target_minutes then conversation_id end) / nullif(count(conversation_id), 0)</pre>
-          </div>
-        </div>
+          <div class="table-shell">
+            <div class="toolbar">
+              <div class="searchbar">Search catalog by metric name, owner, or identifier...</div>
+              <div class="toolbar-actions">
+                <div class="chip">Filter</div>
+                <div class="chip">Sort</div>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Metric identification</th>
+                  <th>Owner lane</th>
+                  <th>Freshness</th>
+                  <th>Contract status</th>
+                  <th>Tier</th>
+                </tr>
+              </thead>
+              <tbody>
+        <tr>
+          <td><div class="metric-name">First Response SLA Attainment</div><div class="metric-slug">first_response_sla_attainment</div></td>
+          <td>Support Operations</td>
+          <td><span class="badge overdue">stale</span></td>
+          <td><span class="badge breached">breached</span></td>
+          <td>managed</td>
+        </tr>
         
-        <div class="card">
-          <div class="micro">finance · certified</div>
-          <h3 style="margin:10px 0 0;font-size:22px;">Net Revenue Retention</h3>
-          <p>Expansion, contraction, and churn normalized against beginning-of-period recurring revenue.
-</p>
-          <div class="pill-stack" style="margin-top:14px;">
-            <span class="pill">Finance Analytics</span>
-            <span class="pill">v1.8</span>
-            <span class="pill">month x account</span>
-          </div>
-          <div class="code" style="margin-top:16px;">
-            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
-            <pre>(starting_arr + expansion_arr - contraction_arr - churn_arr) / nullif(starting_arr, 0)</pre>
-          </div>
-        </div>
+        <tr>
+          <td><div class="metric-name">Net Revenue Retention</div><div class="metric-slug">net_revenue_retention</div></td>
+          <td>Finance Analytics</td>
+          <td><span class="badge within_sla">within sla</span></td>
+          <td><span class="badge watch">watch</span></td>
+          <td>certified</td>
+        </tr>
         
-        <div class="card">
-          <div class="micro">lifecycle · managed</div>
-          <h3 style="margin:10px 0 0;font-size:22px;">Onboarding Time To Value</h3>
-          <p>Median days from signed contract to first value milestone completion for enterprise accounts.
-</p>
-          <div class="pill-stack" style="margin-top:14px;">
-            <span class="pill">Customer Success Analytics</span>
-            <span class="pill">v0.9</span>
-            <span class="pill">cohort month x account</span>
-          </div>
-          <div class="code" style="margin-top:16px;">
-            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
-            <pre>percentile_cont(0.5) within group (order by days_to_first_value)</pre>
-          </div>
-        </div>
+        <tr>
+          <td><div class="metric-name">Onboarding Time To Value</div><div class="metric-slug">onboarding_time_to_value_days</div></td>
+          <td>Customer Success Analytics</td>
+          <td><span class="badge within_sla">within sla</span></td>
+          <td><span class="badge watch">watch</span></td>
+          <td>managed</td>
+        </tr>
         
-        <div class="card">
-          <div class="micro">revenue · certified</div>
-          <h3 style="margin:10px 0 0;font-size:22px;">Pipeline Coverage Ratio</h3>
-          <p>Ratio of qualified pipeline against the current quarter committed revenue target.
-</p>
-          <div class="pill-stack" style="margin-top:14px;">
-            <span class="pill">Revenue Systems</span>
-            <span class="pill">v2.3</span>
-            <span class="pill">quarter x segment</span>
-          </div>
-          <div class="code" style="margin-top:16px;">
-            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
-            <pre>sum(qualified_pipeline_amount) / nullif(sum(committed_revenue_target), 0)</pre>
-          </div>
-        </div>
+        <tr>
+          <td><div class="metric-name">Pipeline Coverage Ratio</div><div class="metric-slug">pipeline_coverage_ratio</div></td>
+          <td>Revenue Systems</td>
+          <td><span class="badge within_sla">within sla</span></td>
+          <td><span class="badge healthy">healthy</span></td>
+          <td>certified</td>
+        </tr>
         
-        <div class="card">
-          <div class="micro">product · managed</div>
-          <h3 style="margin:10px 0 0;font-size:22px;">Weekly Active Workspace Rate</h3>
-          <p>Percent of provisioned workspaces with at least one qualifying collaborative action in the last seven days.
+        <tr>
+          <td><div class="metric-name">Weekly Active Workspace Rate</div><div class="metric-slug">weekly_active_workspace_rate</div></td>
+          <td>Product Intelligence</td>
+          <td><span class="badge within_sla">within sla</span></td>
+          <td><span class="badge healthy">healthy</span></td>
+          <td>managed</td>
+        </tr>
+        </tbody>
+            </table>
+          </div>
+          <div class="grid-2" style="margin-top:20px;">
+            <div class="panel">
+              <div class="label">Metric spotlight</div>
+              <h3 style="margin-top:10px;">Net Revenue Retention</h3>
+              <p>Expansion, contraction, and churn normalized against beginning-of-period recurring revenue.
 </p>
-          <div class="pill-stack" style="margin-top:14px;">
-            <span class="pill">Product Intelligence</span>
-            <span class="pill">v3.0</span>
-            <span class="pill">week x workspace</span>
+              <div class="pill-stack" style="margin-top:16px;">
+                <span class="pill">Finance Analytics</span>
+                <span class="pill">v1.8</span>
+                <span class="pill">month x account</span>
+              </div>
+            </div>
+            <div class="code">
+              <div class="code-head"><span class="label" style="color:#93c5fd;">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
+              <pre>(starting_arr + expansion_arr - contraction_arr - churn_arr) / nullif(starting_arr, 0)</pre>
+            </div>
           </div>
-          <div class="code" style="margin-top:16px;">
-            <div class="code-head"><span class="micro">Formula contract</span><div class="lights"><i></i><i></i><i></i></div></div>
-            <pre>count(distinct active_workspace_id) / nullif(count(distinct provisioned_workspace_id), 0)</pre>
-          </div>
-        </div>
-        </div>
         </div>
       </section>
     
-      <div class="footer">
-        <span><strong>Discipline:</strong> metric governance</span>
-        <span><strong>Focus:</strong> contracts / freshness / ownership / semantic reuse</span>
-        <span><strong>Surface:</strong> operator-friendly / AI-legible / analytics-safe</span>
-      </div>
+        <div class="footer">
+          <span><strong>Discipline:</strong> metric governance</span>
+          <span><strong>Focus:</strong> contracts / freshness / semantic reuse</span>
+          <span><strong>Surface:</strong> operator-friendly / AI-legible / analytics-safe</span>
+        </div>
+      </main>
     </div>
   </body>
 </html>
