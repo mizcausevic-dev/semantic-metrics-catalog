@@ -50,7 +50,7 @@ machine-readable publication.
 ## Local run
 
 ```powershell
-Set-Location "C:\Users\chaus\dev\repos\semantic-metrics-catalog"
+cd semantic-metrics-catalog
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m app.main
@@ -74,7 +74,7 @@ $env:PORT = "4998"
 ## Validation
 
 ```powershell
-Set-Location "C:\Users\chaus\dev\repos\semantic-metrics-catalog"
+cd semantic-metrics-catalog
 .\.venv\Scripts\python.exe -m unittest discover -s tests
 .\.venv\Scripts\python.exe scripts\run_demo.py
 .\.venv\Scripts\python.exe scripts\smoke_check.py
@@ -117,4 +117,4 @@ flowchart LR
   E --> G["AI and retrieval consumers"]
 ```
 
-More detail lives in [C:\Users\chaus\dev\repos\semantic-metrics-catalog\docs\architecture.md](/C:/Users/chaus/dev/repos/semantic-metrics-catalog/docs/architecture.md).
+More detail lives in [docs/architecture.md](./docs/architecture.md).
